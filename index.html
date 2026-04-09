@@ -75,19 +75,19 @@
       <div id="progress-bar" class="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500" style="width: 0%"></div>
     </div>
     <div class="flex gap-1 mb-6 overflow-x-auto tabs-scroll pb-2">
-      <button onclick="setCategory('general')" data-tab="general" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface">
+      <button onclick="setCategory('general')" data-tab="general" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface flex-shrink-0">
         General
       </button>
-      <button onclick="setCategory('behavioral')" data-tab="behavioral" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface">
+      <button onclick="setCategory('behavioral')" data-tab="behavioral" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface flex-shrink-0">
         Behavioral
       </button>
-      <button onclick="setCategory('technical')" data-tab="technical" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface">
+      <button onclick="setCategory('technical')" data-tab="technical" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface flex-shrink-0">
         Technical
       </button>
-      <button onclick="setCategory('pressure')" data-tab="pressure" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface">
+      <button onclick="setCategory('pressure')" data-tab="pressure" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface flex-shrink-0">
         Pressure
       </button>
-      <button onclick="setCategory('industry')" data-tab="industry" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface">
+      <button onclick="setCategory('industry')" data-tab="industry" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all text-text2 hover:bg-surface flex-shrink-0">
         Industry
       </button>
     </div>
@@ -131,7 +131,7 @@
           </span>
         </button>
       </div>
-      <p id="voice-status" class="text-center text-sm text-text2 mb-2 hidden">Listening... Speak in English</p>
+      <p id="voice-status" class="text-center text-sm text-error font-medium mb-2 hidden">Recording...</p>
     </div>
     <div id="feedback-panel" class="hidden bg-surface rounded-2xl p-6 mb-6 animate-slideUp">
       <div class="flex items-center justify-center gap-8 mb-8">
@@ -572,6 +572,7 @@
       }
       state.isAnswered = true;
       stopTimer();
+      stopVoiceInput();
       el.answerInput.disabled = true;
       el.submitBtn.disabled = true;
       el.tryAgainBtn.style.display = 'none';
@@ -751,7 +752,7 @@
         finalTranscript = el.answerInput.value || '';
         document.getElementById('voice-icon').textContent = 'Recording';
         document.getElementById('voice-btn').classList.add('animate-pulse', 'bg-error/20');
-        document.getElementById('voice-status').textContent = 'Listening... speak now';
+        document.getElementById('voice-status').textContent = 'Recording...';
         document.getElementById('voice-status').classList.remove('hidden');
         el.answerInput.disabled = false;
         resetSilenceTimer();
