@@ -199,7 +199,7 @@
         <h3 class="font-semibold mb-3">Recommended Answer</h3>
         <div id="model-content" class="p-4 bg-accent/10 border border-accent/30 rounded-xl text-sm"></div>
       </div>
-      <button id="try-again-btn" onclick="tryAgain()" class="w-full py-3 rounded-xl font-semibold bg-warning hover:bg-warning/90 transition-all mb-3">
+      <button id="try-again-btn" onclick="tryAgain()" style="display:none" class="w-full py-3 rounded-xl font-semibold bg-warning hover:bg-warning/90 transition-all mb-3">
         Try Again
       </button>
       <button id="next-btn" onclick="nextQuestion()" class="w-full py-4 rounded-xl font-semibold bg-accent hover:bg-accent/90 transition-all flex items-center justify-center gap-2">
@@ -574,6 +574,7 @@
       stopTimer();
       el.answerInput.disabled = true;
       el.submitBtn.disabled = true;
+      el.tryAgainBtn.style.display = 'none';
       el.submitText.textContent = 'Evaluating...';
       el.submitSpinner.classList.remove('hidden');
       setTimeout(() => {
@@ -589,7 +590,7 @@
           state.sessionScores.push(scores);
         }
         showFeedback(scores, feedback, analysis, answer, state.timerSeconds);
-      }, 800);
+      }, 300);
     }
 
     function showFeedback(scores, feedback, analysis, timeSpent) {
@@ -721,10 +722,11 @@
 
     let voiceRecognition = null;
     let isVoiceActive = false;
+    let silenceTimer = null;
 
     function toggleVoiceInput() {
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert('Voice input is not supported in your browser. Please use Chrome or Edge.');
+        alert('Voice input is not supported in your browser. Please use Chrome or Edge on mobile.');
         return;
       }
       if (isVoiceActive) {
@@ -741,37 +743,74 @@
       voiceRecognition.continuous = true;
       voiceRecognition.interimResults = true;
       voiceRecognition.maxAlternatives = 1;
+
+      let finalTranscript = '';
+
       voiceRecognition.onstart = () => {
         isVoiceActive = true;
+        finalTranscript = el.answerInput.value || '';
         document.getElementById('voice-icon').textContent = 'Recording';
         document.getElementById('voice-btn').classList.add('animate-pulse', 'bg-error/20');
+        document.getElementById('voice-status').textContent = 'Listening... speak now';
         document.getElementById('voice-status').classList.remove('hidden');
         el.answerInput.disabled = false;
+        resetSilenceTimer();
       };
+
       voiceRecognition.onresult = (event) => {
-        let transcript = '';
+        resetSilenceTimer();
+        let interim = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += ' ' + t;
+          } else {
+            interim += t;
+          }
         }
-        el.answerInput.value = transcript;
-        el.charCount.textContent = transcript.length + '/2000';
+        el.answerInput.value = finalTranscript + (interim ? ' ' + interim : '');
+        el.charCount.textContent = el.answerInput.value.length + '/2000';
       };
+
       voiceRecognition.onerror = (event) => {
         if (event.error === 'not-allowed') {
-          alert('Microphone access denied. Please allow microphone access to use voice input.');
+          alert('Microphone access denied. Please allow microphone access in your browser settings.');
+          stopVoiceInput();
+          return;
         }
-        stopVoiceInput();
+        if (event.error === 'no-speech') return;
+        if (isVoiceActive) {
+          try { voiceRecognition.start(); } catch(e) {}
+        }
       };
+
       voiceRecognition.onend = () => {
-        if (isVoiceActive) voiceRecognition.start();
+        if (isVoiceActive) {
+          try { voiceRecognition.start(); } catch(e) {}
+        }
       };
-      voiceRecognition.start();
+
+      try {
+        voiceRecognition.start();
+      } catch(e) {
+        alert('Could not start voice recognition. Please try again.');
+        stopVoiceInput();
+      }
+    }
+
+    function resetSilenceTimer() {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        // Stay ready - don't stop unless user does
+      }, 3000);
     }
 
     function stopVoiceInput() {
+      isVoiceActive = false;
+      if (silenceTimer) clearTimeout(silenceTimer);
+      silenceTimer = null;
       if (voiceRecognition) {
-        isVoiceActive = false;
-        voiceRecognition.stop();
+        try { voiceRecognition.stop(); } catch(e) {}
         voiceRecognition = null;
       }
       document.getElementById('voice-icon').textContent = 'Voice';
