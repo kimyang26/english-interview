@@ -597,6 +597,9 @@
     function showFeedback(scores, feedback, analysis, timeSpent) {
       el.mainCard.classList.add('animate-scaleIn');
       el.feedbackPanel.classList.remove('hidden');
+      el.submitBtn.disabled = false;
+      el.submitText.textContent = 'Submit Answer';
+      el.submitSpinner.classList.add('hidden');
       const mins = Math.floor(timeSpent / 60);
       const secs = timeSpent % 60;
       const timeLabel = mins > 0 ? mins + 'm ' + secs + 's' : secs + 's';
